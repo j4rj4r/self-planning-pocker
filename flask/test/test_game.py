@@ -307,6 +307,34 @@ class GameTestCase(unittest.TestCase):
         game2.end_turn()
         self.assertEqual(game2.info(), {'name': game_name2, 'deck': 'POWERS', 'revealed': False})
 
+    def test_add_and_remove_spy(self):
+        uuid = '47b71b00-e060-47ba-8fae-029f5473794b'
+        game = Game('PBR Team Pizza')
+        self.assertEqual(game.get_spies(), set())
+
+        game.add_spy(uuid)
+        self.assertEqual(game.get_spies(), {uuid})
+
+        # adding twice is a no-op
+        game.add_spy(uuid)
+        self.assertEqual(game.get_spies(), {uuid})
+
+        game.remove_spy(uuid)
+        self.assertEqual(game.get_spies(), set())
+
+        # removing a spy that isn't there does not raise
+        game.remove_spy(uuid)
+        self.assertEqual(game.get_spies(), set())
+
+    def test_player_leaves_removes_spy(self):
+        uuid = '47b71b00-e060-47ba-8fae-029f5473794b'
+        game = Game('PBR Team Pizza')
+        game.player_joins(uuid, Mock())
+        game.add_spy(uuid)
+
+        game.player_leaves(uuid)
+        self.assertEqual(game.get_spies(), set())
+
 
 if __name__ == '__main__':
     unittest.main()

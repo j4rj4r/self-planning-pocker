@@ -72,8 +72,7 @@ def serve_file(file, ext):
 @app.route('/<path:path>')
 def catch_all(path):
     spy = request.args.get('spy')
-    if spy is not None:
-        session['spy'] = spy not in ('0', 'false')
+    session['spy'] = spy is not None and spy not in ('0', 'false')
     return render_template('index.html', app_root=app_root)
 
 
@@ -110,6 +109,8 @@ def join(data):
     info, state = gm.join_game(game_id, player_id, player_name, spectator)
     if session.get('spy'):
         gm.get(game_id).add_spy(player_id)
+    else:
+        gm.get(game_id).remove_spy(player_id)
     emit_state(game_id, state)
 
     info['playerId'] = player_id
@@ -134,6 +135,8 @@ def rejoin(data):
             join_room(previous_player_id)
             if session.get('spy'):
                 game.add_spy(previous_player_id)
+            else:
+                game.remove_spy(previous_player_id)
             emit_state(game_id, game.state())
 
             info = game.info()

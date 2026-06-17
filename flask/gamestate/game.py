@@ -24,6 +24,9 @@ class Game:
     def add_spy(self, uuid: str) -> None:
         self.__spies.add(uuid)
 
+    def remove_spy(self, uuid: str) -> None:
+        self.__spies.discard(uuid)
+
     def get_spies(self) -> set:
         return set(self.__spies)
 
