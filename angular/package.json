@@ -21,7 +21,7 @@
     "@angular/localize": "^17.0.6",
     "@angular/platform-browser": "^17.0.6",
     "@angular/platform-browser-dynamic": "^17.0.6",
-    "@angular/router": "^17.0.6",
+    "@angular/router": "^17.3.12",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@ngneat/transloco": "^6.0.1",
     "@ngneat/transloco-locale": "^5.1.2",
