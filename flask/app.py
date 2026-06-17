@@ -85,13 +85,13 @@ def serve_assets(path):
     return app.send_static_file(f'assets/{path}')
 
 def emit_state(game_id, state, emit_fn=emit):
-    emit_fn('state', state, to=game_id, json=True)
+    emit_fn('state', state, to=game_id)
     game = gm.get(game_id)
     spies = game.get_spies()
     if spies:
         full_state = game.full_state()
         for spy_id in spies:
-            emit_fn('state', full_state, to=spy_id, json=True)
+            emit_fn('state', full_state, to=spy_id)
 
 
 @socketio.event
@@ -178,7 +178,7 @@ def rename_game(data):
     game_name = data['name']
 
     info = gm.rename_game(game_id, game_name)
-    emit('info', info, to=game_id, json=True)
+    emit('info', info, to=game_id)
 
 
 @socketio.event
@@ -187,7 +187,7 @@ def set_deck(data):
     deck_name = data['deck']
 
     info, state = gm.set_deck(game_id, deck_name)
-    emit('info', info, to=game_id, json=True)
+    emit('info', info, to=game_id)
     emit_state(game_id, state)
 
 
@@ -227,7 +227,7 @@ def reveal_cards():
 
     state, info = gm.reveal_cards(game_id)
     emit_state(game_id, state)
-    emit('info', info, to=game_id, json=True)
+    emit('info', info, to=game_id)
 
 
 @socketio.event
@@ -236,7 +236,7 @@ def end_turn():
 
     state, info = gm.end_turn(game_id)
     emit_state(game_id, state)
-    emit('info', info, to=game_id, json=True)
+    emit('info', info, to=game_id)
     emit('new_game', to=game_id)
 
 
