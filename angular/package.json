@@ -24,7 +24,7 @@
     "@angular/router": "^17.0.6",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@ngneat/transloco": "^6.0.1",
-    "@ngneat/transloco-locale": "^5.1.1",
+    "@ngneat/transloco-locale": "^5.1.2",
     "@popperjs/core": "^2.11.8",
     "@types/canvas-confetti": "^1.6.0",
     "@types/node": "^20.10.4",
