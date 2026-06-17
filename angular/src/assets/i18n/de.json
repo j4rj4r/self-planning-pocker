@@ -36,7 +36,8 @@
     "MODIFIED_FIBONACCI": "Modifiziertes Fibonacci",
     "POWERS": "Zweierpotenz",
     "TRUST_VOTE": "Vertrauensvotum",
-    "T_SHIRTS": "T-Shirt Größen"
+    "T_SHIRTS": "T-Shirt Größen",
+    "BUSINESS_VALUE": "Geschäftswert"
   },
   "ongoingGame": {
     "page-title": "Planning Poker {{gameName}}"

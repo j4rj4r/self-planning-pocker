@@ -36,7 +36,8 @@
     "MODIFIED_FIBONACCI": "Fibonacci modificato",
     "POWERS": "Poteri di 2",
     "TRUST_VOTE": "Trust Vote",
-    "T_SHIRTS": "Taglia della maglietta"
+    "T_SHIRTS": "Taglia della maglietta",
+    "BUSINESS_VALUE": "Valore di business"
   },
   "ongoingGame": {
     "page-title": "Pianificando Poker {{gameName}}"

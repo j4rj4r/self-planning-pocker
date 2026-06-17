@@ -36,7 +36,8 @@
     "MODIFIED_FIBONACCI": "Zmodyfikowany Fibonacci",
     "POWERS": "Moc 2",
     "TRUST_VOTE": "Wotum zaufania",
-    "T_SHIRTS": "Rozmiar koszulek"
+    "T_SHIRTS": "Rozmiar koszulek",
+    "BUSINESS_VALUE": "Wartość biznesowa"
   },
   "ongoingGame": {
     "page-title": "Poker planistyczny {{gameName}}"
