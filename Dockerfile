@@ -20,7 +20,7 @@ RUN npm run build self-host-planning-poker
 
 
 # ---------- BACKEND BUILD (Python Flask) ----------
-FROM docker.io/library/python:3.11.7-alpine3.18
+FROM docker.io/library/python:3.12.3-alpine3.18
 
 RUN adduser -H -D -u 1001 -G root default
 
