@@ -18,5 +18,5 @@ python-socketio==5.9.0
 six==1.16.0
 Werkzeug==2.3.8
 wsproto==1.2.0
-zope.event==5.0
+zope.event==6.2
 zope.interface==6.1
