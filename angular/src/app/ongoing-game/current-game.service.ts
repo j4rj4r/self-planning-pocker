@@ -107,9 +107,11 @@ export class CurrentGameService {
 
   canActivate(route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> {
     const gameId = route.params['gameId'];
+    const storedPlayerId = this.userInformation.getStoredPlayerId(gameId);
     return this.socket.connect()
-    .emitWithAck('join', {
+    .emitWithAck(storedPlayerId ? 'rejoin' : 'join', {
       game: gameId,
+      playerId: storedPlayerId,
       name: this.userInformation.getName(),
       spectator: this.userInformation.isSpectator()
     })
@@ -121,6 +123,9 @@ export class CurrentGameService {
         } else {
           this.infoSubject.next(response);
           this.userInformation.setPlayerIdSubject(response.playerId);
+          if (response.playerId) {
+            this.userInformation.saveReconnectInfo(gameId, response.playerId);
+          }
           return true;
         }
       },
@@ -134,6 +139,7 @@ export class CurrentGameService {
     this.socket.disconnect();
     this.stateSubject.next({});
     this.infoSubject.next(null);
+    this.userInformation.clearReconnectInfo();
   }
 
   public renameGame(newName: string): void {

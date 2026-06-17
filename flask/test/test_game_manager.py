@@ -1,5 +1,6 @@
 import unittest
 import uuid
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 from peewee import SqliteDatabase
@@ -111,15 +112,18 @@ class GameManagerTestCase(unittest.TestCase):
         self.assertEqual(stored_game.deck, 'POWERS')
 
     def test_join_game(self):
+        game_id = str(uuid.uuid4())
+        StoredGame.create(uuid=game_id, name='PBR Pizza', deck='FIBONACCI')
+
         gm = GameManager()
         game_mock = Mock(**{'state.return_value': "{'foo': 'bar'}", 'info.return_value': "{'fizz': 'buzz'}"})
-        gm.games = {'uuid1': game_mock}
+        gm.games = {game_id: game_mock}
 
         player_name = 'Peter'
         player_id = 'p1'
         is_spectator = True
 
-        info, state = gm.join_game('uuid1', player_id, player_name, is_spectator)
+        info, state = gm.join_game(game_id, player_id, player_name, is_spectator)
         game_mock.player_joins.assert_called()
         args = game_mock.player_joins.call_args.args
         self.assertEqual(args[0], player_id)
@@ -130,6 +134,8 @@ class GameManagerTestCase(unittest.TestCase):
         game_mock.info.assert_called()
         self.assertEqual(state, "{'foo': 'bar'}")
         self.assertEqual(info, "{'fizz': 'buzz'}")
+        stored_game = StoredGame.get(StoredGame.uuid == uuid.UUID(game_id))
+        self.assertIsNotNone(stored_game.last_active)
 
         with self.assertRaises(GameDoesNotExistError) as ex:
             gm.join_game('uuid2', 'p2', player_name, is_spectator)
@@ -151,6 +157,54 @@ class GameManagerTestCase(unittest.TestCase):
         self.assertFalse('uuid2' in gm.games.keys())
         game_mock2.state.assert_called()
         self.assertEqual(state2, "{'bar': 'bang'}")
+
+    def test_schedule_and_cancel_leave(self):
+        gm = GameManager()
+        self.assertFalse(gm.cancel_leave('p1'))
+
+        gm.schedule_leave('p1')
+        self.assertTrue(gm.cancel_leave('p1'))
+        # cancelling twice has no further effect
+        self.assertFalse(gm.cancel_leave('p1'))
+
+    def test_confirm_leave(self):
+        gm = GameManager()
+        game_mock = Mock(**{'is_game_empty.return_value': False, 'state.return_value': "{'foo': 'bar'}"})
+        gm.games = {'uuid1': game_mock}
+
+        # no leave was scheduled: nothing happens (the player reconnected before we even got here)
+        self.assertIsNone(gm.confirm_leave('uuid1', 'p1'))
+        game_mock.player_leaves.assert_not_called()
+
+        gm.schedule_leave('p1')
+        state = gm.confirm_leave('uuid1', 'p1')
+        game_mock.player_leaves.assert_called_with('p1')
+        self.assertEqual(state, "{'foo': 'bar'}")
+        # the pending leave was consumed
+        self.assertFalse(gm.cancel_leave('p1'))
+
+    def test_cleanup_stale_games(self):
+        fresh_id = str(uuid.uuid4())
+        stale_in_memory_id = str(uuid.uuid4())
+        stale_id = str(uuid.uuid4())
+        StoredGame.create(uuid=fresh_id, name='Fresh', deck='FIBONACCI')
+        StoredGame.create(uuid=stale_in_memory_id, name='Stale but loaded', deck='FIBONACCI')
+        StoredGame.create(uuid=stale_id, name='Stale', deck='FIBONACCI')
+
+        old_date = datetime.now(timezone.utc) - timedelta(days=60)
+        StoredGame.update(last_active=old_date).where(
+            StoredGame.uuid.in_([uuid.UUID(stale_in_memory_id), uuid.UUID(stale_id)])
+        ).execute()
+
+        gm = GameManager()
+        gm.games = {stale_in_memory_id: Mock()}
+
+        removed = gm.cleanup_stale_games(timedelta(days=30))
+
+        self.assertEqual(removed, 1)
+        self.assertTrue(StoredGame.select().where(StoredGame.uuid == uuid.UUID(fresh_id)).exists())
+        self.assertTrue(StoredGame.select().where(StoredGame.uuid == uuid.UUID(stale_in_memory_id)).exists())
+        self.assertFalse(StoredGame.select().where(StoredGame.uuid == uuid.UUID(stale_id)).exists())
 
         with self.assertRaises(GameNotOngoingError) as ex:
             gm.leave_game('uuid3', 'p3')

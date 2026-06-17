@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from peewee import DoesNotExist
@@ -9,11 +10,16 @@ from gamestate.game import Game
 from gamestate.models import StoredGame
 from gamestate.player import Player
 
+DEFAULT_STALE_GAME_TTL = timedelta(days=30)
+
 
 class GameManager:
     """Class that manages games"""
     def __init__(self):
         self.games = {}
+        # player ids whose disconnection has been scheduled but not yet confirmed,
+        # giving them a chance to reclaim their seat (e.g. on a page reload) via rejoin
+        self.pending_leaves: set[str] = set()
 
     def create(self, name: str, deck_name='FIBONACCI') -> str:
         game_uuid = str(uuid.uuid4())
@@ -50,6 +56,7 @@ class GameManager:
         game = self.get(game_uuid)
         player = Player(player_name, is_spectator)
         game.player_joins(player_id, player)
+        self.__touch(game_uuid)
         return game.info(), game.state()
 
     def leave_game(self, game_uuid: str, player_uuid: str) -> dict:
@@ -58,6 +65,42 @@ class GameManager:
         if game.is_game_empty():
             self.games.pop(game_uuid)
         return game.state()
+
+    def schedule_leave(self, player_uuid: str) -> None:
+        """Marks a player as about to leave, without removing them yet."""
+        self.pending_leaves.add(player_uuid)
+
+    def cancel_leave(self, player_uuid: str) -> bool:
+        """Cancels a previously scheduled leave (the player reconnected in time).
+
+        Returns True if there was a pending leave to cancel.
+        """
+        if player_uuid in self.pending_leaves:
+            self.pending_leaves.discard(player_uuid)
+            return True
+        return False
+
+    def confirm_leave(self, game_uuid: str, player_uuid: str) -> Optional[dict]:
+        """Finalizes a previously scheduled leave, unless it was cancelled by a rejoin."""
+        if player_uuid not in self.pending_leaves:
+            return None
+        self.pending_leaves.discard(player_uuid)
+        return self.leave_game(game_uuid, player_uuid)
+
+    def cleanup_stale_games(self, ttl: timedelta = DEFAULT_STALE_GAME_TTL) -> int:
+        """Deletes games that have had no activity for longer than ttl and are not currently in memory.
+
+        Returns the number of games that were removed.
+        """
+        cutoff = datetime.now(timezone.utc) - ttl
+        removed = 0
+        for stored_game in StoredGame.select().where(StoredGame.last_active < cutoff):
+            game_uuid = str(stored_game.uuid)
+            if game_uuid in self.games:
+                continue
+            stored_game.delete_instance()
+            removed += 1
+        return removed
 
     def rename_game(self, game_uuid: str, game_name: str) -> dict:
         game = self.__get_ongoing_game(game_uuid)
@@ -99,4 +142,9 @@ class GameManager:
             raise DeckDoesNotExistError(f'Deck {deck_name} does not exist')
         deck = Deck[deck_name]
         return deck
+
+    @staticmethod
+    def __touch(game_uuid: str) -> None:
+        StoredGame.update(last_active=datetime.now(timezone.utc)) \
+            .where(StoredGame.uuid == uuid.UUID(game_uuid)).execute()
     

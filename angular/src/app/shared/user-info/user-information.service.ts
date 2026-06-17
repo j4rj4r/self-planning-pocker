@@ -30,6 +30,31 @@ export class UserInformationService {
     this.playerIdSubject.next(playerId);
   }
 
+  saveReconnectInfo(gameId: string, playerId: string): void {
+    this.saveToLocalStorage('reconnectInfo', JSON.stringify({ gameId, playerId }));
+  }
+
+  getStoredPlayerId(gameId: string): string | undefined {
+    const raw = this.loadFromLocalStorage('reconnectInfo');
+    if (!raw) {
+      return undefined;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed.gameId === gameId ? parsed.playerId : undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  clearReconnectInfo(): void {
+    try {
+      localStorage.removeItem('reconnectInfo');
+    } catch (e) {
+      console.debug('Localstorage is either unavailable or disabled');
+    }
+  }
+
   nameObservable(): Observable<string> {
     return this.nameSubject.asObservable();
   }

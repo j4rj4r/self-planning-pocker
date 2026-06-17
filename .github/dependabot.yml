@@ -5,8 +5,6 @@ updates:
     schedule:
       interval: "monthly"
       day: "friday"
-    assignees:
-      - "axeleroy"
     labels:
       - "dependencies"
       - "docker"
@@ -15,8 +13,6 @@ updates:
     schedule:
       interval: "monthly"
       day: "friday"
-    assignees:
-      - "axeleroy"
     labels:
         - "dependencies"
         - "github_actions"
@@ -25,8 +21,6 @@ updates:
     schedule:
       interval: "monthly"
       day: "friday"
-    assignees:
-      - "axeleroy"
     labels:
       - "dependencies"
       - "python"
@@ -36,8 +30,6 @@ updates:
     schedule:
       interval: "monthly"
       day: "friday"
-    assignees:
-      - "axeleroy"
     labels:
       - "dependencies"
       - "angular"

@@ -2,6 +2,7 @@ import errno
 import os
 import sys
 import uuid
+from datetime import timedelta
 
 from flask import Flask, request, session, render_template
 from flask_cors import CORS
@@ -9,9 +10,9 @@ from flask_socketio import SocketIO, join_room, leave_room, emit
 from peewee import SqliteDatabase, OperationalError
 
 from permission_check import check_db_file_permissions
-from gamestate.exceptions import PlanningPokerException
+from gamestate.exceptions import PlanningPokerException, GameDoesNotExistError
 from gamestate.game_manager import GameManager
-from gamestate.models import database_proxy, StoredGame
+from gamestate.models import database_proxy, ensure_schema
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -30,13 +31,29 @@ else:
 database_proxy.initialize(real_db)
 if database_proxy.is_closed():
     database_proxy.connect()
-StoredGame.create_table()
+ensure_schema()
 
 gm = GameManager()
 
 app_root = os.getenv('APP_ROOT', '/')
 if not app_root.endswith('/'):
     app_root += '/'
+
+# How long a disconnected player's seat is kept before being removed, to survive a quick
+# page reload (which disconnects then reconnects) without showing a duplicate/ghost player.
+DISCONNECT_GRACE_SECONDS = int(os.getenv('DISCONNECT_GRACE_SECONDS', '10'))
+# How long an idle game (not currently loaded by any server process) is kept before being deleted.
+STALE_GAME_TTL = timedelta(days=int(os.getenv('STALE_GAME_TTL_DAYS', '30')))
+STALE_GAME_CLEANUP_INTERVAL_SECONDS = 60 * 60
+
+
+def cleanup_stale_games_periodically():
+    while True:
+        socketio.sleep(STALE_GAME_CLEANUP_INTERVAL_SECONDS)
+        gm.cleanup_stale_games(STALE_GAME_TTL)
+
+
+socketio.start_background_task(cleanup_stale_games_periodically)
 
 
 @app.route('/create', methods=['POST'])
@@ -68,14 +85,14 @@ def serve_icon():
 def serve_assets(path):
     return app.send_static_file(f'assets/{path}')
 
-def emit_state(game_id, state):
-    emit('state', state, to=game_id, json=True)
+def emit_state(game_id, state, emit_fn=emit):
+    emit_fn('state', state, to=game_id, json=True)
     game = gm.get(game_id)
     spies = game.get_spies()
     if spies:
         full_state = game.full_state()
         for spy_id in spies:
-            emit('state', full_state, to=spy_id, json=True)
+            emit_fn('state', full_state, to=spy_id, json=True)
 
 
 @socketio.event
@@ -100,20 +117,56 @@ def join(data):
 
 
 @socketio.event
-def disconnect():
-    player_id = session['player_id']
-    game_id = session['game_id']
+def rejoin(data):
+    """Like join, but reclaims a previous seat (and its vote) if it hasn't been removed yet."""
+    game_id = data['game']
+    previous_player_id = data.get('playerId')
 
-    state = gm.leave_game(game_id, player_id)
+    if previous_player_id and gm.cancel_leave(previous_player_id):
+        try:
+            game = gm.get(game_id)
+        except GameDoesNotExistError:
+            game = None
+        if game is not None and previous_player_id in game.list_players_uuid():
+            session['player_id'] = previous_player_id
+            session['game_id'] = game_id
+            join_room(game_id)
+            join_room(previous_player_id)
+            if session.get('spy'):
+                game.add_spy(previous_player_id)
+            emit_state(game_id, game.state())
+
+            info = game.info()
+            info['playerId'] = previous_player_id
+            return info
+
+    return join(data)
+
+
+@socketio.event
+def disconnect():
+    player_id = session.get('player_id')
+    game_id = session.get('game_id')
+    if not player_id or not game_id:
+        return
+
     leave_room(game_id)
     leave_room(player_id)
-    if state:
-        emit_state(game_id, state)
-    else:
-        emit('state', state, to=game_id, json=True)
+    gm.schedule_leave(player_id)
+    socketio.start_background_task(finalize_leave, game_id, player_id)
 
     session['player_id'] = None
     session['game_id'] = None
+
+
+def finalize_leave(game_id, player_id):
+    socketio.sleep(DISCONNECT_GRACE_SECONDS)
+    try:
+        state = gm.confirm_leave(game_id, player_id)
+        if state is not None:
+            emit_state(game_id, state, emit_fn=socketio.emit)
+    except PlanningPokerException:
+        pass
 
 
 @socketio.event
