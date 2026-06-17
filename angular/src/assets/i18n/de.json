@@ -1,0 +1,93 @@
+{
+  "translation-hints": {
+    "game": "Im Projekt ist es eine \"Partie\" wie in einer \"Partie Schach\" und nicht wie in \"einem Partyspiel\"."
+  },
+  "navbar": {
+    "appTitle": "Self-Host Planning Poker",
+    "appIcon": "Anwendungssymbol",
+    "homeLink": "Startseite",
+    "playerInfo": {
+      "spectator": "Zuschauer",
+      "actions": {
+        "editPlayerName": "Name ändern"
+      },
+      "cancel": "{{buttons.cancel}}"
+    },
+    "gameInfo": {
+      "editTitle": "Spiel bearbeiten",
+      "cancel": "{{buttons.cancel}}"
+    },
+    "gameName": {
+      "copy-toast": "Link zum Teilen des Spiels in die Zwischenablage kopiert"
+    },
+    "qrCodeModal": {
+      "title": "Scan to join"
+    }
+  },
+  "gameForm": {
+    "name-label": "Name des Spiels",
+    "name-placeholder": "Backlog Review Team Pizza",
+    "deck-label": "Spielstapel",
+    "createButton-label": "Neues Spiel erstellen",
+    "updateButton-label": "{{buttons.update}}"
+  },
+  "deckNames": {
+    "FIBONACCI": "Fibonacci",
+    "MODIFIED_FIBONACCI": "Modifiziertes Fibonacci",
+    "POWERS": "Zweierpotenz",
+    "TRUST_VOTE": "Vertrauensvotum",
+    "T_SHIRTS": "T-Shirt Größen"
+  },
+  "ongoingGame": {
+    "page-title": "Planning Poker {{gameName}}"
+  },
+  "setUsername": {
+    "page-title": "Bitte gib deinen Namen ein, bevor du dem Spiel beitrittst"
+  },
+  "playerName-form": {
+    "username-placeholder": "Vorname",
+    "joinButton-label": "Der Partie beitreten",
+    "updateButton-label": "{{buttons.update}}"
+  },
+  "turnSummary": {
+    "average-label": "Durchschnitt:",
+    "agreement-label": "Vereinbarung:",
+    "votes-label": "{{votes}} Stimmen"
+  },
+  "buttons": {
+    "edit": "Edit game info",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "close": "Close",
+    "reveal": "Karten aufdecken",
+    "newTurn": "Neuer Zug",
+    "link": "Copy link to join game",
+    "qrcode": "Display QR code to join game"
+  },
+  "playerState": {
+    "spectator": "Zuschauer",
+    "player": "Spieler"
+  },
+  "footer": {
+    "github": "GitHub",
+    "dockerhub": "DockerHub",
+    "license": "Lizenz"
+  },
+  "errors": {
+    "disconnect": "Verbindung zum Spiel getrennt. Grund: \"{{reason}}\". Wird erneut in {{delay}}...",
+    "0": "Fehler: {{message}}",
+    "4001": "Du hast ein Deck ausgewählt, das nicht existiert.",
+    "4002": "Irgendwie versuchst du eine Aktion auf ein Spiel zu machen, das nicht läuft.",
+    "4003": "Irgendwie versuchst du eine Aktion auf ein Spiel zu machen, an dem du nicht teilnimmst.",
+    "4004": "Dieses Spiel existiert nicht.",
+    "4005": "Die Karte, die du ausgewählt hast, ist kein akzeptabler Wert des aktuellen Kartenspiels.",
+    "4006": "Du bist ein Zuschauer und solltest keine Karte auswählen können."
+  },
+  "reconnect": {
+    "attempt": "Verbindung verloren. Versuche erneut zu verbinden... ({{attempt}}/{{total}})",
+    "error": "Verbindung konnte nicht wiederhergestellt werden. Grund: \"{{error}}\".",
+    "failed": "Verbindung konnte nach {{attempts}} Versuchen nicht wiederhergestellt werden.",
+    "success": "Verbindung nach {{attempts}} Versuchen erfolgreich wiederhergestellt."
+  }
+}

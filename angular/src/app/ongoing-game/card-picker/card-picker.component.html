@@ -1,0 +1,10 @@
+<div class="container d-flex overflow-auto align-items-center h-100 pt-5 pb-md-5 pb-2" *ngIf="deck">
+  <div class="flex-grow-1"></div>
+  <shpp-pickable-card *ngFor="let card of deck.values"
+             [cardValue]="card"
+             [disabled]="isSpectator || isGameRevealed"
+             [selected]="selectedCard === card"
+             (click)="selectCard(card)">
+  </shpp-pickable-card>
+  <div class="flex-grow-1"></div>
+</div>

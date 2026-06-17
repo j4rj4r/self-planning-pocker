@@ -1,0 +1,21 @@
+<ng-container *ngIf="playerState">
+  <div class="d-flex flex-column align-items-center m-2 m-sm-5">
+    <div class="card-border"
+         [class.card-disabled]="playerState.spectator"
+         [class.face-down]="playerState.hasPicked && playerState.hand === undefined"
+         [class.dashed]="playerState.spectator || !playerState.hasPicked">
+      <div class="card-value" *ngIf="playerState.hand !== undefined && deck">
+        {{ displayCardValue(deck, playerState.hand) }}
+      </div>
+      <div class="card-value" *ngIf="playerState.spectator">
+        <svg *transloco="let t" [attr.aria-labbel]="t('playerState.spectator')"
+             class="bi bi-eye-fill" width="1em" height="1em" fill="currentColor">
+          <use xlink:href="assets/bootstrap-icons.svg#eye-fill"/>
+        </svg>
+      </div>
+    </div>
+    <div class="player-name mt-1">
+      {{ playerState.name }}
+    </div>
+  </div>
+</ng-container>

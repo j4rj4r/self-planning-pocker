@@ -1,0 +1,93 @@
+{
+  "translation-hints": {
+    "game": "To jest \"gra\" jak \"gra w szachy\", nie jak \"gra imprezowa\"."
+  },
+  "navbar": {
+    "appTitle": "Self-Host Planning Poker",
+    "appIcon": "Ikona aplikacji",
+    "homeLink": "Strona główna",
+    "playerInfo": {
+      "spectator": "Obserwator",
+      "actions": {
+        "editPlayerName": "Edytuj nazwę użytkownika"
+      },
+      "cancel": "{{buttons.cancel}}"
+    },
+    "gameInfo": {
+      "editTitle": "Edytuj grę",
+      "cancel": "{{buttons.cancel}}"
+    },
+    "gameName": {
+      "copy-toast": "Link do gry skopiowany do schowka"
+    },
+    "qrCodeModal": {
+      "title": "Scan to join"
+    }
+  },
+  "gameForm": {
+    "name-label": "Nazwa gry",
+    "name-placeholder": "Drużyna Pizzy",
+    "deck-label": "Talia do gry",
+    "createButton-label": "Stwórz nową grę",
+    "updateButton-label": "{{buttons.update}}"
+  },
+  "deckNames": {
+    "FIBONACCI": "Fibonacci",
+    "MODIFIED_FIBONACCI": "Zmodyfikowany Fibonacci",
+    "POWERS": "Moc 2",
+    "TRUST_VOTE": "Wotum zaufania",
+    "T_SHIRTS": "Rozmiar koszulek"
+  },
+  "ongoingGame": {
+    "page-title": "Poker planistyczny {{gameName}}"
+  },
+  "setUsername": {
+    "page-title": "Wprowadź nazwę użytkownika przed dołączeniem do gry"
+  },
+  "playerName-form": {
+    "username-placeholder": "Jan",
+    "joinButton-label": "Dołącz do gry",
+    "updateButton-label": "{{buttons.update}}"
+  },
+  "turnSummary": {
+    "average-label": "Średnio:",
+    "agreement-label": "Zgodność:",
+    "votes-label": "{{votes}} głosów"
+  },
+  "buttons": {
+    "edit": "Edit game info",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "update": "Aktualizuj",
+    "close": "Close",
+    "reveal": "Pokaż karty",
+    "newTurn": "Nowa tura",
+    "link": "Copy link to join game",
+    "qrcode": "Display QR code to join game"
+  },
+  "playerState": {
+    "spectator": "Obserwator",
+    "player": "Gracz"
+  },
+  "footer": {
+    "github": "GitHub",
+    "dockerhub": "DockerHub",
+    "license": "Licencja"
+  },
+  "errors": {
+    "disconnect": "Rozłączono z grą. Powód: \"{{reason}}\". Ponowne połączenia za {{delay}}s...",
+    "0": "Błąd: {{message}}",
+    "4001": "Wybrałeś talię, która nie istnieje.",
+    "4002": "Próbujesz wykonać akcję w grze, w której nie uczestniczysz.",
+    "4003": "Próbujesz wykonać akcję w grze, w której nie uczestniczysz.",
+    "4004": "Ta gra nie istnieje.",
+    "4005": "Wybrana karta nie jest dopuszczalna w bieżącej talii.",
+    "4006": "Jesteś obserwatorem, nie powinieneś mieć możliwości wyboru karty."
+  },
+  "reconnect": {
+    "attempt": "Utracono połączenie. Próba ponownego połączenia... ({{attempt}}/{{total}})",
+    "error": "Nie można nawiązać ponownego połączenia. Powód: \"{{error}}\".",
+    "failed": "Nie można połączyć ponownie się po {{attempts}} próbach.",
+    "success": "Pomyślnie połączono ponownie po {{attempts}} próbach."
+  }
+}
