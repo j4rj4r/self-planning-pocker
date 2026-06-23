@@ -133,7 +133,7 @@ python -m unittest
 >   -v $(pwd)/flask:/app \
 >   -p 5000:5000 \
 >   python:3.11-slim \
->   bash -c "cd /app; pip install -r requirements.txt; FLASK_DEBUG=1 gunicorn --worker-class eventlet -w 1 app:app --bind 0.0.0.0:5000"
+>   bash -c "cd /app; pip install -r requirements.txt; FLASK_DEBUG=1 gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 app:app --bind 0.0.0.0:5000"
 > ```
 > </details>
 
