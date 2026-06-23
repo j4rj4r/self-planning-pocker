@@ -24,6 +24,17 @@
           <use xlink:href="assets/bootstrap-icons.svg#qr-code-scan"/>
         </svg>
       </button>
+      <button class="btn btn-outline-light btn-sm"
+              *transloco="let t"
+              [attr.aria-label]="t('buttons.history')"
+              [ngbTooltip]="t('buttons.history')"
+              placement="bottom"
+              (click)="displayHistory()"
+      >
+        <svg class="bi bi-clock-history" width="1.2em" height="1.2em" fill="currentColor" aria-hidden="true">
+          <use xlink:href="assets/bootstrap-icons.svg#clock-history"/>
+        </svg>
+      </button>
     </div>
   </ng-container>
 </ng-container>

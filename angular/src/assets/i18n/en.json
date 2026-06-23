@@ -22,6 +22,10 @@
     },
     "qrCodeModal": {
       "title": "Scan to join"
+    },
+    "historyModal": {
+      "title": "History",
+      "empty": "No estimations have been recorded yet for this game."
     }
   },
   "gameForm": {
@@ -64,7 +68,8 @@
     "reveal": "Reveal cards",
     "newTurn": "New turn",
     "link": "Copy link to join game",
-    "qrcode": "Display QR code to join game"
+    "qrcode": "Display QR code to join game",
+    "history": "Show estimation history"
   },
   "playerState": {
     "spectator": "Spectator",

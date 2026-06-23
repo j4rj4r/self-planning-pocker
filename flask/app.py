@@ -33,7 +33,9 @@ if database_proxy.is_closed():
     database_proxy.connect()
 ensure_schema()
 
-gm = GameManager()
+HISTORY_MAX_ENTRIES_PER_GAME = int(os.getenv('HISTORY_MAX_ENTRIES_PER_GAME', '50'))
+
+gm = GameManager(max_history_entries_per_game=HISTORY_MAX_ENTRIES_PER_GAME)
 
 app_root = os.getenv('APP_ROOT', '/')
 if not app_root.endswith('/'):
@@ -238,6 +240,12 @@ def end_turn():
     emit_state(game_id, state)
     emit('info', info, to=game_id)
     emit('new_game', to=game_id)
+
+
+@socketio.event
+def get_history():
+    game_id = session['game_id']
+    return gm.get_history(game_id)
 
 
 @socketio.on_error()

@@ -63,6 +63,7 @@ volumes:
 | Variable              | Meaning                                                                                                                                                                                                                                          | Example            |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
 | `APP_ROOT` (optional) | Allows you to deploy to another path than `/`.<br>See [Configuration examples for deploying on sub‐paths](https://github.com/axeleroy/self-host-planning-poker/wiki/Configuration-examples-for-deploying-on-sub%E2%80%90paths) for more details. | `APP_ROOT=/poker/` |
+| `HISTORY_MAX_ENTRIES_PER_GAME` (optional) | The maximum number of past estimation rounds kept in a game's history. Older entries are pruned once this is exceeded. Defaults to `50`. | `HISTORY_MAX_ENTRIES_PER_GAME=100` |
 
 ### Running behind a reverse-proxy
 

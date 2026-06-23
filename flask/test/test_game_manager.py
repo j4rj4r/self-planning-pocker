@@ -1,3 +1,4 @@
+import json
 import unittest
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -9,7 +10,7 @@ from gamestate.deck import Deck
 from gamestate.exceptions import GameDoesNotExistError, DeckDoesNotExistError, \
     GameNotOngoingError
 from gamestate.game_manager import GameManager
-from gamestate.models import StoredGame, database_proxy
+from gamestate.models import StoredGame, HistoryEntry, database_proxy
 
 
 class GameManagerTestCase(unittest.TestCase):
@@ -20,6 +21,10 @@ class GameManagerTestCase(unittest.TestCase):
         if database_proxy.is_closed():
             database_proxy.connect()
         StoredGame.create_table()
+        HistoryEntry.create_table()
+
+    def tearDown(self) -> None:
+        HistoryEntry.delete().execute()
 
     def test_create(self):
         gm = GameManager()
@@ -294,7 +299,10 @@ class GameManagerTestCase(unittest.TestCase):
 
     def test_end_turn(self):
         gm = GameManager()
-        game_mock = Mock(**{'state.return_value': "{'foo': 'bar'}", 'info.return_value': "{'fizz': 'buzz'}"})
+        game_mock = Mock(**{
+            'state.return_value': "{'foo': 'bar'}", 'info.return_value': "{'fizz': 'buzz'}",
+            'get_revealed.return_value': False
+        })
         gm.games = {'uuid1': game_mock}
 
         state, info = gm.end_turn("uuid1")
@@ -306,6 +314,80 @@ class GameManagerTestCase(unittest.TestCase):
         with self.assertRaises(GameNotOngoingError) as ex:
             gm.end_turn('uuid2')
         self.assertEqual(str(ex.exception), 'Game uuid2 is not ongoing')
+
+    def test_end_turn_records_history_only_when_revealed(self):
+        game_id = str(uuid.uuid4())
+        StoredGame.create(uuid=game_id, name='PBR Pizza', deck='FIBONACCI')
+        player_mock = Mock(**{'state_with_hand.return_value': {'name': 'Peter', 'spectator': False, 'hand': 5}})
+        game_mock = Mock(**{
+            'state.return_value': {}, 'info.return_value': {},
+            'get_revealed.return_value': False,
+            'list_players.return_value': [('p1', player_mock)],
+            'get_deck.return_value': Deck.FIBONACCI
+        })
+        gm = GameManager()
+        gm.games = {game_id: game_mock}
+
+        gm.end_turn(game_id)
+        self.assertEqual(HistoryEntry.select().where(HistoryEntry.game == uuid.UUID(game_id)).count(), 0)
+
+        game_mock.get_revealed.return_value = True
+        gm.end_turn(game_id)
+        entries = list(HistoryEntry.select().where(HistoryEntry.game == uuid.UUID(game_id)))
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].deck, 'FIBONACCI')
+        self.assertEqual(json.loads(entries[0].results), [{'name': 'Peter', 'spectator': False, 'hand': 5}])
+
+    def test_end_turn_prunes_oldest_history_beyond_cap(self):
+        game_id = str(uuid.uuid4())
+        StoredGame.create(uuid=game_id, name='PBR Pizza', deck='FIBONACCI')
+        player_mock = Mock(**{'state_with_hand.return_value': {'name': 'Peter', 'spectator': False, 'hand': 5}})
+        game_mock = Mock(**{
+            'state.return_value': {}, 'info.return_value': {},
+            'get_revealed.return_value': True,
+            'list_players.return_value': [('p1', player_mock)],
+            'get_deck.return_value': Deck.FIBONACCI
+        })
+        gm = GameManager(max_history_entries_per_game=2)
+        gm.games = {game_id: game_mock}
+
+        gm.end_turn(game_id)
+        gm.end_turn(game_id)
+        gm.end_turn(game_id)
+
+        self.assertEqual(HistoryEntry.select().where(HistoryEntry.game == uuid.UUID(game_id)).count(), 2)
+
+    def test_get_history(self):
+        game_id = str(uuid.uuid4())
+        StoredGame.create(uuid=game_id, name='PBR Pizza', deck='FIBONACCI')
+        HistoryEntry.create(game=uuid.UUID(game_id), deck='FIBONACCI',
+                             results=json.dumps([{'name': 'Older', 'spectator': False, 'hand': 3}]))
+        HistoryEntry.create(game=uuid.UUID(game_id), deck='POWERS',
+                             results=json.dumps([{'name': 'Newer', 'spectator': False, 'hand': 8}]))
+
+        gm = GameManager()
+        entries = gm.get_history(game_id)
+
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0]['deck'], 'POWERS')
+        self.assertEqual(entries[0]['players'], [{'name': 'Newer', 'spectator': False, 'hand': 8}])
+        self.assertEqual(entries[1]['deck'], 'FIBONACCI')
+
+        with self.assertRaises(GameDoesNotExistError):
+            gm.get_history(str(uuid.uuid4()))
+
+    def test_cleanup_stale_games_removes_history(self):
+        stale_id = str(uuid.uuid4())
+        StoredGame.create(uuid=stale_id, name='Stale', deck='FIBONACCI')
+        HistoryEntry.create(game=uuid.UUID(stale_id), deck='FIBONACCI', results=json.dumps([]))
+        StoredGame.update(last_active=datetime.now(timezone.utc) - timedelta(days=60)) \
+            .where(StoredGame.uuid == uuid.UUID(stale_id)).execute()
+
+        gm = GameManager()
+        gm.cleanup_stale_games(timedelta(days=30))
+
+        self.assertFalse(StoredGame.select().where(StoredGame.uuid == uuid.UUID(stale_id)).exists())
+        self.assertEqual(HistoryEntry.select().where(HistoryEntry.game == uuid.UUID(stale_id)).count(), 0)
 
 
 if __name__ == '__main__':

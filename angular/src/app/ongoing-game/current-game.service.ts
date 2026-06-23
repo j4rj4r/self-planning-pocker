@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Manager, Socket } from 'socket.io-client';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, filter, map, Observable, Subject } from 'rxjs';
-import { ErrorMessage, GameInfo, GameState } from '../model/events';
+import { ErrorMessage, GameInfo, GameState, HistoryEntry } from '../model/events';
 import { Deck, decksDict } from '../model/deck';
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { HashMap, TranslocoService } from '@ngneat/transloco';
@@ -160,6 +160,17 @@ export class CurrentGameService {
 
   public endTurn(): void {
     this.socket.emit('end_turn', (response?: ErrorMessage) => this.handleError(response));
+  }
+
+  public getHistory(): Promise<HistoryEntry[]> {
+    return this.socket.emitWithAck('get_history')
+    .then((response: HistoryEntry[] | ErrorMessage) => {
+      if (response && 'error' in response) {
+        this.handleError(response);
+        return [];
+      }
+      return response;
+    });
   }
 
   private handleError(error?: ErrorMessage | any): void {

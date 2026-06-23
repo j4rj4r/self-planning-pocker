@@ -8,6 +8,7 @@ import { TranslocoDirective, TranslocoService } from '@ngneat/transloco';
 import { NgbModal, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgIf } from '@angular/common';
 import { QrCodeModalContentComponent } from "./qr-code-modal-content/qr-code-modal-content.component";
+import { HistoryModalContentComponent } from "./history-modal-content/history-modal-content.component";
 
 @Component({
     selector: 'shpp-game-name',
@@ -43,6 +44,10 @@ export class NavGameNameComponent implements OnDestroy {
   displayQrCode(): void {
     const modalRef = this.modalService.open(QrCodeModalContentComponent);
     modalRef.componentInstance.url = this.getUrl();
+  }
+
+  displayHistory(): void {
+    this.modalService.open(HistoryModalContentComponent, { size: 'lg' });
   }
 
   private getUrl(): string {

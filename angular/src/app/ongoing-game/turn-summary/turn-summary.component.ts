@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@ang
 import { PlayerState } from '../../model/events';
 import { filter, map, Observable, Subscription, tap, withLatestFrom } from 'rxjs';
 import { Deck, decksDict, displayCardValue } from '../../model/deck';
+import { CardCount, computeRoundStats } from '../../model/round-stats';
 import { AsyncPipe, KeyValue, KeyValuePipe, NgClass, NgFor } from '@angular/common';
 import { CurrentGameService } from '../current-game.service';
 import confetti from 'canvas-confetti';
@@ -48,27 +49,15 @@ export class TurnSummaryComponent implements AfterViewInit, OnDestroy {
       map((playerStates: PlayerState[]) => playerStates.filter((state) => state.hand !== undefined && state.hand !== null))
     );
 
-    this.$counts = this.$playerStates
-    .pipe(map((players: PlayerState[]) =>
-      players
-      .map((player) => player.hand || 0)
-      .reduce((previous, current) => {
-        let num = previous.get(current.toString()) || 0;
-        previous.set(current.toString(), num + 1);
-        return previous;
-      }, new Map() as CardCount)
-    ));
+    const $roundStats = this.$playerStates
+    .pipe(map((players: PlayerState[]) => computeRoundStats(players.map((player) => player.hand || 0))));
 
-    this.$agreement = this.$counts
-    .pipe(
-      withLatestFrom(this.$playerStates),
-      map(([counts, players]) => (Math.max(0, ...counts.values()) / players.length || 0)));
+    this.$counts = $roundStats.pipe(map((stats) => stats.counts));
+    this.$agreement = $roundStats.pipe(map((stats) => stats.agreement));
 
     this.subscriptions.concat(
-      this.$playerStates.pipe(
-        map((players: PlayerState[]) =>
-          players.reduce((prev, current) => prev + (current.hand || 0), 0) / players.length || 0))
-      .subscribe((value) => this.average = value));
+      $roundStats
+      .subscribe((stats) => this.average = stats.average));
 
     this.subscriptions.concat(
       this.$agreement
@@ -140,5 +129,3 @@ export class TurnSummaryComponent implements AfterViewInit, OnDestroy {
     });
   }
 }
-
-type CardCount = Map<string, number>;

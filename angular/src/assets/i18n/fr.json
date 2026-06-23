@@ -22,6 +22,10 @@
     },
     "qrCodeModal": {
       "title": "Scanner pour rejoindre"
+    },
+    "historyModal": {
+      "title": "Historique",
+      "empty": "Aucune estimation n'a encore été enregistrée pour cette partie."
     }
   },
   "gameForm": {
@@ -64,7 +68,8 @@
     "reveal": "Révéler les cartes",
     "newTurn": "Nouveau tour",
     "link": "Copier le lien pour rejoindre la partie",
-    "qrcode": "Afficher le QR code pour rejoindre la partie"
+    "qrcode": "Afficher le QR code pour rejoindre la partie",
+    "history": "Afficher l'historique des estimations"
   },
   "playerState": {
     "spectator": "Spectateur",

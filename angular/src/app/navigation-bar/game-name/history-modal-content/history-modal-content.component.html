@@ -1,0 +1,53 @@
+<div class="modal-header">
+  <h4 *transloco="let t; read 'navbar.historyModal'"
+      class="modal-title">
+    {{ t('title') }}
+  </h4>
+  <button *transloco="let b; read 'buttons'"
+          type="button" class="btn-close"
+          [attr.aria-label]="b('close')"
+          (click)="activeModal.dismiss()"></button>
+</div>
+<div class="modal-body">
+  <ng-container *ngIf="!loading">
+    <ng-container *ngIf="entries.length === 0">
+      <p *transloco="let t; read 'navbar.historyModal'" class="text-muted mb-0">{{ t('empty') }}</p>
+    </ng-container>
+    <div *ngFor="let entry of entries; let last = last"
+         class="row align-items-center pb-3"
+         [class.border-bottom]="!last"
+         [class.mb-3]="!last">
+      <div class="col-12 mb-2">
+        <small class="text-muted">{{ entry.recordedAt | translocoDate: { dateStyle: 'medium', timeStyle: 'short' } }}</small>
+      </div>
+      <div class="col col-md-7" *transloco="let t; read 'turnSummary'">
+        <div class="d-flex flex-wrap text-center">
+          <div *ngFor="let item of entry.stats.counts | keyvalue: valueDescOrder; index as i" class="d-flex flex-column align-items-center m-2">
+            <div class="card-border" [class.muted]="i > 0">
+              <div class="card-value" [class.text-muted]="i > 0" [class.fw-bold]="i === 0">
+                {{ displayCardValue(entry.deck, Number(item.key)) }}
+              </div>
+            </div>
+            <p class="mt-1 mb-0 small" [class.text-muted]="i > 0" [class.fw-bold]="i === 0">
+              {{ t('votes-label', { votes: item.value }) }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col col-md-5 text-center" *transloco="let t; read 'turnSummary'">
+        <p class="text-muted mb-1">{{ t('average-label') }}</p>
+        <p class="fs-4 fw-bold">
+          {{
+          entry.deck.textValues
+          ? displayCardValue(entry.deck, round(entry.stats.average)) || '−'
+          : (entry.stats.average | translocoDecimal: { maximumFractionDigits: 1 })
+          }}
+        </p>
+        <p class="text-muted mb-1">{{ t('agreement-label') }}</p>
+        <p class="fs-4 fw-bold" [ngClass]="agreementClass(entry.stats.agreement)">{{
+          entry.stats.agreement === 0 ? '−' : entry.stats.agreement | translocoPercent: { maximumFractionDigits: 0 }
+          }}</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

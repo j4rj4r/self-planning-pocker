@@ -17,6 +17,12 @@ export interface PlayerState extends Player {
 
 export type GameState = Record<string, PlayerState>;
 
+export interface HistoryEntry {
+  recordedAt: string;
+  deck: string;
+  players: PlayerState[];
+}
+
 export interface ErrorMessage {
   error: true;
   message: string;
