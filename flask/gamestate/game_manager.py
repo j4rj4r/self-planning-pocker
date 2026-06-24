@@ -96,15 +96,11 @@ class GameManager:
         Returns the number of games that were removed.
         """
         cutoff = datetime.now(timezone.utc) - ttl
-        removed = 0
-        for stored_game in StoredGame.select().where(StoredGame.last_active < cutoff):
-            game_uuid = str(stored_game.uuid)
-            if game_uuid in self.games:
-                continue
-            HistoryEntry.delete().where(HistoryEntry.game == stored_game.uuid).execute()
-            stored_game.delete_instance()
-            removed += 1
-        return removed
+        in_memory_uuids = [uuid.UUID(game_uuid) for game_uuid in self.games.keys()]
+        stale_games = (StoredGame.select(StoredGame.uuid)
+                        .where(StoredGame.last_active < cutoff, StoredGame.uuid.not_in(in_memory_uuids)))
+        HistoryEntry.delete().where(HistoryEntry.game.in_(stale_games)).execute()
+        return StoredGame.delete().where(StoredGame.uuid.in_(stale_games)).execute()
 
     def rename_game(self, game_uuid: str, game_name: str) -> dict:
         game = self.__get_ongoing_game(game_uuid)
@@ -163,15 +159,11 @@ class GameManager:
             deck=game.get_deck().name,
             results=json.dumps(results)
         )
-        overflow = (HistoryEntry.select()
-                    .where(HistoryEntry.game == uuid.UUID(game_uuid))
-                    .count()) - self.max_history_entries_per_game
-        if overflow > 0:
-            stale_ids = (HistoryEntry.select(HistoryEntry.id)
-                         .where(HistoryEntry.game == uuid.UUID(game_uuid))
-                         .order_by(HistoryEntry.recorded_at.asc())
-                         .limit(overflow))
-            HistoryEntry.delete().where(HistoryEntry.id.in_(stale_ids)).execute()
+        stale_ids = (HistoryEntry.select(HistoryEntry.id)
+                     .where(HistoryEntry.game == uuid.UUID(game_uuid))
+                     .order_by(HistoryEntry.recorded_at.desc())
+                     .offset(self.max_history_entries_per_game))
+        HistoryEntry.delete().where(HistoryEntry.id.in_(stale_ids)).execute()
 
     @staticmethod
     def __get_deck(deck_name) -> Deck:

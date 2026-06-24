@@ -1,6 +1,32 @@
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 
+.history-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: .5rem;
+  scrollbar-width: thin;
+  scrollbar-color: $primary transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $primary;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  // last entry has no border-bottom/mb-3, give it some breathing room from the scroll edge instead
+  > .row:last-child {
+    padding-bottom: 0.5rem;
+  }
+}
+
 .card-border {
   height: 50px;
   &.muted {
