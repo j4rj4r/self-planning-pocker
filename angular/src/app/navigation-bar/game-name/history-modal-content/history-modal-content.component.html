@@ -3,17 +3,30 @@
       class="modal-title">
     {{ t('title') }}
   </h4>
-  <div *transloco="let t; read 'navbar.historyModal'">
-    <div ngbDropdown class="d-inline-block me-2" *ngIf="!loading && entries.length > 0">
-      <button class="btn btn-outline-secondary btn-sm" id="historyExportDropdown" ngbDropdownToggle>
-        {{ t('export') }}
+  <ng-container *ngIf="!loading && entries.length > 0">
+    <div class="btn-group me-2" role="group" *transloco="let t; read 'navbar.historyModal'">
+      <button class="btn btn-outline-secondary btn-sm"
+              type="button"
+              [attr.aria-label]="t('exportCsv')"
+              [ngbTooltip]="t('exportCsv')"
+              placement="bottom"
+              (click)="exportCsv()">
+        <svg class="bi bi-filetype-csv" width="1.2em" height="1.2em" fill="currentColor" aria-hidden="true">
+          <use xlink:href="assets/bootstrap-icons.svg#filetype-csv"/>
+        </svg>
       </button>
-      <div ngbDropdownMenu aria-labelledby="historyExportDropdown">
-        <button ngbDropdownItem (click)="exportCsv()">{{ t('exportCsv') }}</button>
-        <button ngbDropdownItem (click)="exportJson()">{{ t('exportJson') }}</button>
-      </div>
+      <button class="btn btn-outline-secondary btn-sm"
+              type="button"
+              [attr.aria-label]="t('exportJson')"
+              [ngbTooltip]="t('exportJson')"
+              placement="bottom"
+              (click)="exportJson()">
+        <svg class="bi bi-filetype-json" width="1.2em" height="1.2em" fill="currentColor" aria-hidden="true">
+          <use xlink:href="assets/bootstrap-icons.svg#filetype-json"/>
+        </svg>
+      </button>
     </div>
-  </div>
+  </ng-container>
   <button *transloco="let b; read 'buttons'"
           type="button" class="btn-close"
           [attr.aria-label]="b('close')"

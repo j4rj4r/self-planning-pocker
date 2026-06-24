@@ -26,7 +26,6 @@
     "historyModal": {
       "title": "History",
       "empty": "No estimations have been recorded yet for this game.",
-      "export": "Export",
       "exportCsv": "Export as CSV",
       "exportJson": "Export as JSON"
     }

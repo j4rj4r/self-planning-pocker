@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { NgbActiveModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoDirective } from '@ngneat/transloco';
 import { TranslocoDatePipe, TranslocoDecimalPipe, TranslocoPercentPipe } from '@ngneat/transloco-locale';
 import { AsyncPipe, KeyValue, KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
@@ -21,7 +21,7 @@ const CSV_COLUMNS = ['recordedAt', 'deck', 'playerName', 'spectator', 'hand'];
   standalone: true,
   templateUrl: './history-modal-content.component.html',
   styleUrls: ['./history-modal-content.component.scss'],
-  imports: [TranslocoDirective, NgFor, NgIf, NgClass, AsyncPipe, KeyValuePipe, TranslocoDecimalPipe, TranslocoPercentPipe, TranslocoDatePipe, NgbDropdownModule]
+  imports: [TranslocoDirective, NgFor, NgIf, NgClass, AsyncPipe, KeyValuePipe, TranslocoDecimalPipe, TranslocoPercentPipe, TranslocoDatePipe, NgbTooltip]
 })
 export class HistoryModalContentComponent implements OnInit {
   activeModal = inject(NgbActiveModal);
