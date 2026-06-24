@@ -1,9 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoDirective } from '@ngneat/transloco';
 import { TranslocoDatePipe, TranslocoDecimalPipe, TranslocoPercentPipe } from '@ngneat/transloco-locale';
 import { AsyncPipe, KeyValue, KeyValuePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { CurrentGameService } from '../../../ongoing-game/current-game.service';
+import { HistoryEntry } from '../../../model/events';
 import { Deck, decksDict, displayCardValue } from '../../../model/deck';
 import { computeRoundStats, RoundStats } from '../../../model/round-stats';
 
@@ -13,12 +14,14 @@ interface HistoryEntryView {
   stats: RoundStats;
 }
 
+const CSV_COLUMNS = ['recordedAt', 'deck', 'playerName', 'spectator', 'hand'];
+
 @Component({
   selector: 'shpp-history-modal-content',
   standalone: true,
   templateUrl: './history-modal-content.component.html',
   styleUrls: ['./history-modal-content.component.scss'],
-  imports: [TranslocoDirective, NgFor, NgIf, NgClass, AsyncPipe, KeyValuePipe, TranslocoDecimalPipe, TranslocoPercentPipe, TranslocoDatePipe]
+  imports: [TranslocoDirective, NgFor, NgIf, NgClass, AsyncPipe, KeyValuePipe, TranslocoDecimalPipe, TranslocoPercentPipe, TranslocoDatePipe, NgbDropdownModule]
 })
 export class HistoryModalContentComponent implements OnInit {
   activeModal = inject(NgbActiveModal);
@@ -26,6 +29,7 @@ export class HistoryModalContentComponent implements OnInit {
 
   loading = true;
   entries: HistoryEntryView[] = [];
+  private rawEntries: HistoryEntry[] = [];
 
   displayCardValue = displayCardValue;
   Number = Number;
@@ -35,6 +39,7 @@ export class HistoryModalContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentGameService.getHistory().then((entries) => {
+      this.rawEntries = entries;
       this.entries = entries.map((entry) => ({
         recordedAt: entry.recordedAt,
         deck: decksDict[entry.deck],
@@ -58,5 +63,33 @@ export class HistoryModalContentComponent implements OnInit {
     } else {
       return 'text-success';
     }
+  }
+
+  exportJson(): void {
+    this.download(JSON.stringify(this.rawEntries, null, 2), 'history.json', 'application/json');
+  }
+
+  exportCsv(): void {
+    const rows = this.rawEntries.flatMap((entry) => entry.players.map((player) => [
+      entry.recordedAt, entry.deck, player.name, String(player.spectator), player.hand ?? ''
+    ]));
+    const csv = [CSV_COLUMNS, ...rows]
+    .map((row) => row.map(HistoryModalContentComponent.escapeCsvField).join(','))
+    .join('\r\n');
+    this.download(csv, 'history.csv', 'text/csv');
+  }
+
+  private static escapeCsvField(field: unknown): string {
+    const text = String(field);
+    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+
+  private download(content: string, filename: string, mimeType: string): void {
+    const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

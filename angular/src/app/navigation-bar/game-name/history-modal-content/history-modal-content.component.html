@@ -3,6 +3,17 @@
       class="modal-title">
     {{ t('title') }}
   </h4>
+  <div *transloco="let t; read 'navbar.historyModal'">
+    <div ngbDropdown class="d-inline-block me-2" *ngIf="!loading && entries.length > 0">
+      <button class="btn btn-outline-secondary btn-sm" id="historyExportDropdown" ngbDropdownToggle>
+        {{ t('export') }}
+      </button>
+      <div ngbDropdownMenu aria-labelledby="historyExportDropdown">
+        <button ngbDropdownItem (click)="exportCsv()">{{ t('exportCsv') }}</button>
+        <button ngbDropdownItem (click)="exportJson()">{{ t('exportJson') }}</button>
+      </div>
+    </div>
+  </div>
   <button *transloco="let b; read 'buttons'"
           type="button" class="btn-close"
           [attr.aria-label]="b('close')"

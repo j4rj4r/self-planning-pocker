@@ -25,7 +25,10 @@
     },
     "historyModal": {
       "title": "Historique",
-      "empty": "Aucune estimation n'a encore été enregistrée pour cette partie."
+      "empty": "Aucune estimation n'a encore été enregistrée pour cette partie.",
+      "export": "Exporter",
+      "exportCsv": "Exporter en CSV",
+      "exportJson": "Exporter en JSON"
     }
   },
   "gameForm": {
