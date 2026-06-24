@@ -22,11 +22,13 @@ jobs:
           cache: 'pip'
       -
         name: Install dependencies
+        working-directory: flask
         run: |
           python -m pip install --upgrade pip
-          cd flask; pip install -r requirements.txt
+          pip install -r requirements.txt
       -
         name: Run tests
+        working-directory: flask
         run: python -m unittest
   frontend-tests:
     name: Front-end tests
@@ -48,7 +50,7 @@ jobs:
         uses: browser-actions/setup-chrome@latest
       -
         name: Run tests
-        run: cd angular; npm i; CHROMIUM_BIN=$(which chrome) npm test
+        run: cd angular; npm ci; CHROMIUM_BIN=$(which chrome) npm test
   frontend-lint:
     name: Front-end linting
     runs-on: ubuntu-latest
@@ -62,4 +64,4 @@ jobs:
           cache: 'npm'
           cache-dependency-path: angular/package-lock.json
       - name: Run linting
-        run: cd angular; npm i; npm run lint
+        run: cd angular; npm ci; npm run lint
