@@ -28,7 +28,7 @@
     "@popperjs/core": "^2.11.8",
     "@types/canvas-confetti": "^1.6.0",
     "@types/node": "^20.10.4",
-    "bootstrap": "^5.3.2",
+    "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "canvas-confetti": "^1.6.0",
     "qrcode": "^1.5.3",
